@@ -1,6 +1,6 @@
 {
   "name": "@blobkit/kzg-wasm",
-  "version": "2.2.19",
+  "version": "2.2.20",
   "description": "a WASM compilation of c-kzg-4844",
   "scripts": {
     "build": "npm run build:ts && npm run transpileCJS && npm run fixRequire ",
