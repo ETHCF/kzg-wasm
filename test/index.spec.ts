@@ -1,6 +1,13 @@
 import { describe, it, assert, beforeAll } from 'vitest'
-import { loadKZG } from '../src/index.js'
-import { bytesToHex, hexToBytes } from '../src/util.js'
+import { bytesToHex } from '../src/util.js'
+
+// Conditional imports based on TYPE environment variable
+const TYPE = (typeof process !== 'undefined' && process.env?.TYPE) || 'SRC'
+
+// Dynamic imports based on TYPE
+const { loadKZG } = TYPE === 'SRC' 
+  ? await import('../src/index.js')
+  : await import('../dist/esm/index.js')
 
 const BYTES_PER_FIELD_ELEMENT = 32
 const FIELD_ELEMENTS_PER_BLOB = 4096
@@ -10,7 +17,7 @@ const BYTES_PER_CELL = 2048
 const BYTES_PER_G1 = 48
 
 describe('kzg initialization', () => {
-  let kzg: any
+  let kzg: Awaited<ReturnType<typeof loadKZG>>
   beforeAll(async () => {
     kzg = await loadKZG()
   })
@@ -22,7 +29,7 @@ describe('kzg initialization', () => {
 
   it('should throw when invalid trusted setup is provided', () => {
     assert.throws(() => {
-      kzg.loadTrustedSetup({ g1_monomial: 'x12',  g1_lagrange: 'bad coordinates', g2_monomial: 'x12'})
+      kzg.loadTrustedSetup(0, { g1_monomial: 'x12',  g1_lagrange: 'bad coordinates', g2_monomial: 'x12'})
     })
   })
 })
@@ -31,8 +38,6 @@ describe('kzg API tests', () => {
   let kzg: Awaited<ReturnType<typeof loadKZG>>
   beforeAll(async () => {
     kzg = await loadKZG()
-    const result = kzg.loadTrustedSetup()
-    assert.equal(result, 0, 'loaded trusted setup successfully')
   })
 
   it('should generate kzg commitments and verify proofs', async () => {
